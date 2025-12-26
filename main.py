@@ -27,16 +27,23 @@ def get_drive_service():
     creds_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
     
     if creds_json:
+        # On charge le texte JSON
         info = json.loads(creds_json)
-        # --- REPARATION DE LA CLE ---
+        
+        # --- PROTECTION CRUCIALE ---
+        # Si la clé contient des doubles anti-slash \\n (erreur courante de copier-coller), 
+        # on les transforme en vrais retours à la ligne \n pour Google.
         if "private_key" in info:
             info["private_key"] = info["private_key"].replace("\\n", "\n")
-        # ----------------------------
+        # ---------------------------
+
         creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
     else:
+        # En local
         creds = service_account.Credentials.from_service_account_file('credentials.json', scopes=SCOPES)
         
     return build('drive', 'v3', credentials=creds)
+
 
 def download_db():
     service = get_drive_service()
