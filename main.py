@@ -24,18 +24,20 @@ FILE_ID = '1PmQ7Mud8HCGPgxXRngKLp4BcqpI4XhUM'
 DB_PATH = "/tmp/temp_database.sqlite"
 
 def get_drive_service():
-    # Correction 2 : Lire les credentials depuis la variable d'environnement Render
     creds_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
     
     if creds_json:
-        # Si on est sur Render
         info = json.loads(creds_json)
+        # --- REPARATION DE LA CLE ---
+        if "private_key" in info:
+            info["private_key"] = info["private_key"].replace("\\n", "\n")
+        # ----------------------------
         creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
     else:
-        # Si on est en local sur ton PC (sécurité)
         creds = service_account.Credentials.from_service_account_file('credentials.json', scopes=SCOPES)
         
     return build('drive', 'v3', credentials=creds)
+
 def download_db():
     service = get_drive_service()
     request = service.files().get_media(fileId=FILE_ID)
