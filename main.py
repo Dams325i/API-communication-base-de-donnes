@@ -24,20 +24,22 @@ FILE_ID = '1PmQ7Mud8HCGPgxXRngKLp4BcqpI4XhUM'
 DB_PATH = "/tmp/temp_database.sqlite"
 
 def get_drive_service():
-    # Récupération de la variable d'environnement sur Render
+    # On récupère la variable configurée sur Render
     creds_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
     
     if creds_json:
+        # On transforme le texte JSON en dictionnaire
         info = json.loads(creds_json)
         
-        # --- CETTE LIGNE EST LA CLÉ DU PROBLÈME ---
+        # --- RÉPARATION DE LA CLÉ PRIVÉE ---
         if "private_key" in info:
+            # On remplace le texte "\n" par de vrais retours à la ligne
             info["private_key"] = info["private_key"].replace("\\n", "\n")
-        # ------------------------------------------
+        # ------------------------------------
             
         creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
     else:
-        # Pour ton test local uniquement
+        # Utilisation locale
         creds = service_account.Credentials.from_service_account_file('credentials.json', scopes=SCOPES)
         
     return build('drive', 'v3', credentials=creds)
@@ -195,4 +197,5 @@ def update_paiement(type_doc: str, id_doc: int, data: dict = Body(...)):
     except Exception as e:
         if conn: conn.close()
         print(f"Erreur Paiement: {e}")
+
         raise HTTPException(status_code=500, detail=str(e))
