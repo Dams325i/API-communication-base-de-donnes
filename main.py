@@ -24,16 +24,21 @@ FILE_ID = '1PmQ7Mud8HCGPgxXRngKLp4BcqpI4XhUM'
 DB_PATH = "/tmp/temp_database.sqlite"
 
 def get_drive_service():
-    # Render place les "Secret Files" à la racine du projet
-    # On vérifie si le fichier existe
-    if os.path.exists('credentials.json'):
-        creds = service_account.Credentials.from_service_account_file(
-            'credentials.json', 
-            scopes=SCOPES
-        )
+    # Récupération de la variable d'environnement sur Render
+    creds_json = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+    
+    if creds_json:
+        info = json.loads(creds_json)
+        
+        # --- CETTE LIGNE EST LA CLÉ DU PROBLÈME ---
+        if "private_key" in info:
+            info["private_key"] = info["private_key"].replace("\\n", "\n")
+        # ------------------------------------------
+            
+        creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
     else:
-        # Si vraiment le fichier est introuvable (ne devrait pas arriver avec Render Secret Files)
-        raise HTTPException(status_code=500, detail="Fichier credentials.json absent sur le serveur")
+        # Pour ton test local uniquement
+        creds = service_account.Credentials.from_service_account_file('credentials.json', scopes=SCOPES)
         
     return build('drive', 'v3', credentials=creds)
 
