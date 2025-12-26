@@ -169,9 +169,9 @@ def update_paiement(type_doc: str, id_doc: int, data: dict = Body(...)):
         query = f"""
             UPDATE {table} 
             SET Statut = ?, 
-                Date_Paiement_total = ?, 
-                Type_Paiement_total = ?, 
-                Numéro_Paiement_total = ? 
+                Date_paiement_total = ?, 
+                Type_paiement_total = ?, 
+                Numéro_paiement_total = ? 
             WHERE {col_id} = ?
         """
         cursor.execute(query, (
@@ -191,4 +191,5 @@ def update_paiement(type_doc: str, id_doc: int, data: dict = Body(...)):
         print(f"Erreur Paiement: {e}")
 
         raise HTTPException(status_code=500, detail=str(e))
+
 
