@@ -259,21 +259,6 @@ def ajouter_rappel(rappel: Rappel):
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
 
-#@app.get("/api/rappels")
-#def obtenir_rappels():
-#    download_db()
-#    conn = sqlite3.connect(DB_PATH)
-#    conn.row_factory = sqlite3.Row # Pour avoir les noms des colonnes
-#    cursor = conn.cursor()
-    
-#    # On récupère les rappels non traités (Statut 0) en premier
-#    cursor.execute("SELECT * FROM Rappels WHERE Statut = 0 ORDER BY Date_Rappel DESC")
-#    rappels = [dict(row) for row in cursor.fetchall()]
-#    print(rappels)
-    
-#    conn.close()
-#    return rappels
-
 @app.delete("/api/rappels/{id_rappel}")
 def supprimer_rappel(id_rappel: int):
     download_db()
@@ -312,10 +297,10 @@ def get_rappels():
     
     # Transformation en liste de dictionnaires pour le JSON
     rappels = [dict(row) for row in rows]
-    print(rappels)
     
     conn.close()
     return rappels
+
 
 
 
