@@ -311,7 +311,9 @@ def get_rappels():
     
     # Transformation en liste de dictionnaires pour le JSON
     rappels = [dict(row) for row in rows]
+    print(rappels)
     
     conn.close()
     return rappels
+
 
