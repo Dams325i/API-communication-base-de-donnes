@@ -269,6 +269,7 @@ def obtenir_rappels():
     # On récupère les rappels non traités (Statut 0) en premier
     cursor.execute("SELECT * FROM Rappels WHERE Statut = 0 ORDER BY Date_Rappel DESC")
     rappels = [dict(row) for row in cursor.fetchall()]
+    print(rappels)
     
     conn.close()
     return rappels
@@ -315,5 +316,6 @@ def get_rappels():
     
     conn.close()
     return rappels
+
 
 
