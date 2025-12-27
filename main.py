@@ -286,3 +286,14 @@ def supprimer_rappel(id_rappel: int):
     upload_db()
     return {"message": "Rappel supprimé"}
 
+@app.put("/api/rappels/{id_rappel}/terminer")
+def terminer_rappel(id_rappel: int):
+    download_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    # On suppose que tu as une colonne 'Statut' (sinon il faut faire ALTER TABLE)
+    cursor.execute("UPDATE Rappels SET Statut = 'Terminé' WHERE id_Rappel = ?", (id_rappel,))
+    conn.commit()
+    conn.close()
+    upload_db()
+    return {"message": "Rappel marqué comme terminé"}
