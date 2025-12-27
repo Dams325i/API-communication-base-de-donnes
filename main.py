@@ -52,6 +52,10 @@ def upload_db():
     media = MediaFileUpload(DB_PATH, mimetype='application/x-sqlite3', resumable=True)
     service.files().update(fileId=FILE_ID, media_body=media).execute()
 
+@app.get("/")
+def read_root():
+    return {"message": "API Facturation opérationnelle", "status": "online"}
+
 # --- ROUTES DE LECTURE AVEC TRI ---
 
 @app.get("/api/clients")
@@ -226,5 +230,6 @@ def supprimer_client(client_id: int):
         if conn: conn.close()
         if isinstance(e, HTTPException): raise e
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
