@@ -231,5 +231,31 @@ def supprimer_client(client_id: int):
         if isinstance(e, HTTPException): raise e
         raise HTTPException(status_code=500, detail=str(e))
 
+# Modèle pour valider les données reçues
+class Rappel(BaseModel):
+    nom: str
+    telephone: str
+    sujet: str
+
+@app.post("/api/rappels")
+def ajouter_rappel(rappel: Rappel):
+    download_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    try:
+        # Insertion dans la table Rappels (que tu as créée)
+        cursor.execute("""
+            INSERT INTO Rappels (Client_Nom, Telephone, Sujet, Date_Rappel, Statut)
+            VALUES (?, ?, ?, datetime('now', 'localtime'), 0)
+        """, (rappel.nom, rappel.telephone, rappel.sujet))
+        
+        conn.commit()
+        conn.close()
+        upload_db()
+        return {"status": "success", "message": "Rappel enregistré"}
+    except Exception as e:
+        if conn: conn.close()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
