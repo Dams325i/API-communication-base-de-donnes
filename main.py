@@ -273,4 +273,16 @@ def obtenir_rappels():
     conn.close()
     return rappels
 
+@app.delete("/api/rappels/{id_rappel}")
+def supprimer_rappel(id_rappel: int):
+    download_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    cursor.execute("DELETE FROM Rappels WHERE id_Rappel = ?", (id_rappel,))
+    
+    conn.commit()
+    conn.close()
+    upload_db()
+    return {"message": "Rappel supprimé"}
 
