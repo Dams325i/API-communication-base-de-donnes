@@ -292,8 +292,9 @@ def terminer_rappel(id_rappel: int):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     # On suppose que tu as une colonne 'Statut' (sinon il faut faire ALTER TABLE)
-    cursor.execute("UPDATE Rappels SET Statut = 'Terminé' WHERE id_Rappel = ?", (id_rappel,))
+    cursor.execute("UPDATE Rappels SET Statut = 1 WHERE id_Rappel = ?", (id_rappel,))
     conn.commit()
     conn.close()
     upload_db()
     return {"message": "Rappel marqué comme terminé"}
+
