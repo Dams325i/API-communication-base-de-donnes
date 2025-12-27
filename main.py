@@ -298,4 +298,20 @@ def terminer_rappel(id_rappel: int):
     upload_db()
     return {"message": "Rappel marqué comme terminé"}
 
+@app.get("/api/rappels")
+def get_rappels():
+    download_db() # TRÈS IMPORTANT : Récupère la base depuis le Cloud
+    conn = sqlite3.connect(DB_PATH)
+    # Pour avoir des dictionnaires {colonne: valeur} au lieu de simples listes
+    conn.row_factory = sqlite3.Row 
+    cursor = conn.cursor()
+    
+    cursor.execute("SELECT * FROM Rappels")
+    rows = cursor.fetchall()
+    
+    # Transformation en liste de dictionnaires pour le JSON
+    rappels = [dict(row) for row in rows]
+    
+    conn.close()
+    return rappels
 
