@@ -3,6 +3,7 @@ import sqlite3
 import os
 import io
 import json
+from pydantic import BaseModel
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
@@ -257,5 +258,6 @@ def ajouter_rappel(rappel: Rappel):
     except Exception as e:
         if conn: conn.close()
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
