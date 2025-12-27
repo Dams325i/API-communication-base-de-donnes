@@ -192,4 +192,39 @@ def update_paiement(type_doc: str, id_doc: int, data: dict = Body(...)):
 
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.delete("/api/clients/{client_id}")
+def supprimer_client(client_id: int):
+    download_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    try:
+        # 1. Vérifier s'il y a des factures liées
+        cursor.execute("SELECT COUNT(*) FROM Factures WHERE id_Client = ?", (client_id,))
+        nb_factures = cursor.fetchone()[0]
+        
+        # 2. Vérifier s'il y a des devis liés
+        cursor.execute("SELECT COUNT(*) FROM Devis WHERE id_Client = ?", (client_id,))
+        nb_devis = cursor.fetchone()[0]
+        
+        if nb_factures > 0 or nb_devis > 0:
+            conn.close()
+            # On renvoie une erreur 400 (Requête incorrecte) car le client n'est pas "supprimable"
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Impossible de supprimer : ce client possède {nb_factures} facture(s) et {nb_devis} devis."
+            )
+
+        # 3. Si tout est vide, on supprime
+        cursor.execute("DELETE FROM Clients WHERE id_Client = ?", (client_id,))
+        conn.commit()
+        conn.close()
+        upload_db()
+        return {"status": "success", "message": "Client supprimé"}
+        
+    except Exception as e:
+        if conn: conn.close()
+        if isinstance(e, HTTPException): raise e
+        raise HTTPException(status_code=500, detail=str(e))
+
 
