@@ -312,9 +312,10 @@ def update_rappel():
     # Ta logique SQL
     cursor = db.cursor()
     cursor.execute(
-        "UPDATE rappels SET Client_Nom = %s, Telephone = %s, Sujet = %s WHERE id_Rappel = %s",
+        "UPDATE Rappels SET Client_Nom = %s, Telephone = %s, Sujet = %s WHERE id_Rappel = %s",
         (nom, tel, sujet, id_rappel)
     )
     db.commit()
     
     return jsonify({"message": "OK"}), 200
+
