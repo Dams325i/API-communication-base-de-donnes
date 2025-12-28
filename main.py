@@ -301,7 +301,20 @@ def get_rappels():
     conn.close()
     return rappels
 
+@app.route('/api/rappels/update', methods=['POST'])
+def update_rappel():
+    data = request.json
+    id_rappel = data.get('id_Rappel')
+    nom = data.get('nom')
+    tel = data.get('telephone')
+    sujet = data.get('sujet')
 
-
-
-
+    # Ta logique SQL
+    cursor = db.cursor()
+    cursor.execute(
+        "UPDATE rappels SET Client_Nom = %s, Telephone = %s, Sujet = %s WHERE id_Rappel = %s",
+        (nom, tel, sujet, id_rappel)
+    )
+    db.commit()
+    
+    return jsonify({"message": "OK"}), 200
