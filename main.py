@@ -301,21 +301,33 @@ def get_rappels():
     conn.close()
     return rappels
 
-@app.route('/api/rappels/update', methods=['POST'])
-def update_rappel():
-    data = request.json
-    id_rappel = data.get('id_Rappel')
-    nom = data.get('nom')
-    tel = data.get('telephone')
-    sujet = data.get('sujet')
+# Modèle pour valider les données de modification
+class RappelUpdate(BaseModel):
+    id_Rappel: int
+    nom: str
+    telephone: str
+    sujet: str
 
-    # Ta logique SQL
-    cursor = db.cursor()
-    cursor.execute(
-        "UPDATE Rappels SET Client_Nom = %s, Telephone = %s, Sujet = %s WHERE id_Rappel = %s",
-        (nom, tel, sujet, id_rappel)
-    )
-    db.commit()
+@app.post("/api/rappels/update")
+def update_rappel(rappel: RappelUpdate):
+    download_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
     
-    return jsonify({"message": "OK"}), 200
-
+    try:
+        # On met à jour les 3 champs
+        query = """
+            UPDATE Rappels 
+            SET Client_Nom = ?, Telephone = ?, Sujet = ? 
+            WHERE id_Rappel = ?
+        """
+        cursor.execute(query, (rappel.nom, rappel.telephone, rappel.sujet, rappel.id_Rappel))
+        
+        conn.commit()
+        conn.close()
+        upload_db() # Renvoie vers Google Drive
+        return {"status": "success", "message": "Rappel mis à jour"}
+    except Exception as e:
+        if conn: conn.close()
+        print(f"Erreur Update Rappel: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
