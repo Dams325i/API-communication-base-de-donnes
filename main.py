@@ -71,6 +71,18 @@ def get_clients():
     conn.close()
     return [dict(row) for row in rows]
 
+@app.get("/api/articles")
+def get_article():
+    download_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    # Tri alphabétique a voir
+    cursor.execute("SELECT * FROM Articles")
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+    
 @app.get("/api/factures")
 def get_factures():
     download_db()
@@ -331,3 +343,4 @@ def update_rappel(rappel: RappelUpdate):
         if conn: conn.close()
         print(f"Erreur Update Rappel: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
