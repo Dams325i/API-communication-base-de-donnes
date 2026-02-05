@@ -71,18 +71,97 @@ def get_clients():
     conn.close()
     return [dict(row) for row in rows]
 
+#@app.get("/api/articles")
+#def get_article():
+    #download_db()
+    #conn = sqlite3.connect(DB_PATH)
+    #conn.row_factory = sqlite3.Row
+    #cursor = conn.cursor()
+    ## Tri alphabétique a voir
+    #cursor.execute("SELECT * FROM Articles")
+    #rows = cursor.fetchall()
+    #conn.close()
+    #return [dict(row) for row in rows]
+
 @app.get("/api/articles")
-def get_article():
-    download_db()
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    # Tri alphabétique a voir
-    cursor.execute("SELECT * FROM Articles")
-    rows = cursor.fetchall()
-    conn.close()
-    return [dict(row) for row in rows]
+async def get_articles_paginated(
+    page: int = 1,
+    page_size: int = 100,
+    db: Session = Depends(get_db)
+):
+    """Récupère les articles avec pagination"""
+    # Validation
+    page = max(1, page)
+    page_size = min(1000, max(10, page_size))  # Limite entre 10 et 1000
     
+    # Calcul de l'offset
+    offset = (page - 1) * page_size
+    
+    # Requête avec pagination
+    articles = db.query(Article).offset(offset).limit(page_size).all()
+    total = db.query(Article).count()
+    
+    # Calcul du nombre de pages
+    pages = (total + page_size - 1) // page_size
+    
+    return {
+        "articles": [article_to_dict(a) for a in articles],
+        "total": total,
+        "page": page,
+        "pages": pages
+    }
+
+
+@app.get("/api/articles/search")
+async def search_articles(
+    q: str,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """Recherche d'articles par code ou désignation"""
+    # Validation
+    limit = min(100, max(1, limit))
+    
+    # Recherche (insensible à la casse)
+    search_term = f"%{q}%"
+    articles = db.query(Article).filter(
+        (Article.Code_Article.ilike(search_term)) |
+        (Article.Désignation.ilike(search_term))
+    ).limit(limit).all()
+    
+    return [article_to_dict(a) for a in articles]
+
+
+@app.get("/api/articles/{code}")
+async def get_article_by_code(
+    code: str,
+    db: Session = Depends(get_db)
+):
+    """Récupère un article par son code"""
+    article = db.query(Article).filter(
+        Article.Code_Article == code
+    ).first()
+    
+    if not article:
+        raise HTTPException(status_code=404, detail="Article non trouvé")
+    
+    return article_to_dict(article)
+
+
+def article_to_dict(article):
+    """Convertit un article SQLAlchemy en dict"""
+    return {
+        "id_Article": article.id_Article,
+        "Code_Article": article.Code_Article,
+        "Désignation": article.Désignation,
+        "Prix_Public_HT": float(article.Prix_Public_HT),
+        "Mon_prix_HT": float(article.Mon_Prix_HT),
+        "Fournisseur": article.Fournisseur,
+        "Type_Urssaf": article.Type_Urssaf
+    }
+
+
+
 @app.get("/api/factures")
 def get_factures():
     download_db()
@@ -343,4 +422,5 @@ def update_rappel(rappel: RappelUpdate):
         if conn: conn.close()
         print(f"Erreur Update Rappel: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
